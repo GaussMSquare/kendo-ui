@@ -1,0 +1,68 @@
+name: CI/CD Pipeline
+
+on:
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  test:
+    name: Run Tests
+    runs-on: ubuntu-latest
+
+    services:
+      db:
+        image: mysql:8.0
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=3
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: huco
+          MYSQL_USER: admin
+          MYSQL_PASSWORD: admin
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.1
+          extensions: mbstring, pdo, pdo_mysql, intl
+          coverage: none
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-suggest
+
+      - name: Run database migrations
+        env:
+          DATABASE_URL: mysql://admin:admin@db:3306/huco
+        run: php bin/console doctrine:migrations:migrate --no-interaction
+
+      - name: Run PHPUnit tests
+        env:
+          DATABASE_URL: mysql://admin:admin@db:3306/huco
+        run: php bin/phpunit
+
+      - name: Install Node.js and dependencies
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Install JS dependencies
+        run: npm install
+
+      - name: Build assets
+        run: npm run build
+
+      - name: Run Behat tests
+        env:
+          DATABASE_URL: mysql://admin:admin@db:3306/huco
+          APP_ENV: test
+        run: vendor/bin/behat
