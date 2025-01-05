@@ -1,0 +1,90 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Articles{% endblock %}
+
+{% block javascripts %}
+    {{ parent() }}
+    <script>
+        document.addEventListener("DOMContentLoaded", function() {
+            $("#grid").kendoGrid({
+                dataSource: {
+                    transport: {
+                        read: {
+                            url: "{{ path('find_articles_api') }}",
+                            dataType: "json"
+                        },
+                        create: {
+                            url: "{{ path('create_article_api') }}",
+                            type: "POST",
+                            contentType: "application/json",
+                            dataType: "json"
+                        },
+                        update: {
+                            url: function (data) {
+                                return "{{ path('update_article_api', {id: 'ID'}) }}".replace('ID', data.id);
+                            },
+                            type: "PUT",
+                            contentType: "application/json",
+                            dataType: "json"
+                        },
+                        destroy: {
+                            url: function (data) {
+                                return "{{ path('delete_article_api', {id: 'ID'}) }}".replace('ID', data.id);
+                            },
+                            type: "DELETE",
+                            dataType: "json"
+                        },
+                        parameterMap: function(data, type) {
+                            if (type !== "read") {
+                                return JSON.stringify(data);
+                            }
+                            return data;
+                        }
+                    },
+                    schema: {
+                        data: "data",
+                        total: "total",
+                        model: {
+                            id: "id",
+                            fields: {
+                                id: { type: "int", editable: false },
+                                title: { type: "string", validation: { required: true } },
+                                content: { type: "string", validation: { required: true } }
+                            }
+                        }
+                    },
+                    serverPaging: true,
+                    //pageSize: 5
+                },
+                scrollable: true,
+                resizable: true,
+                reorderable: true,
+                filterable: true,
+                sortable: true,
+
+                pageable: {
+                    pageSize: 5,
+                    refresh: true,
+                    pageSizes: true,
+                    buttonCount: 5
+                },
+
+                editable: "inline",
+                toolbar: ["create", "search"],
+                columns: [
+                    { field: "id", title: "Id" },
+                    { field: "title", title: "Titre", encoded: false },
+                    { field: "content", title: "Contenu" },
+                    { command: ["edit", "destroy"], title: "&nbsp;", width: "200px" }
+                ]
+            });
+        });
+    </script>
+{% endblock %}
+
+{% block body %}
+    <div class="container mt-5">
+        <h2 class="mb-4">Articles</h2>
+        <div id="grid"></div>
+    </div>
+{% endblock %}

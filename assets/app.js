@@ -7,4 +7,7 @@ import './bootstrap.js';
  */
 import './styles/app.css';
 
+import '@progress/kendo-ui';
+//import '@progress/kendo-theme-default/dist/all.css';
+
 console.log('This log comes from assets/app.js - welcome to AssetMapper! 🎉');

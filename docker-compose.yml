@@ -1,0 +1,45 @@
+services:
+  php:
+    build: ./docker/php
+    container_name: php
+    volumes:
+      - .:/var/www
+    networks:
+      - symfony
+
+  nginx:
+    build: ./docker/nginx
+    container_name: nginx
+    ports:
+      - "80:80"
+    volumes:
+      - .:/var/www
+    networks:
+      - symfony
+
+  db:
+    image: mysql:8.0
+    container_name: db
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: huco
+      MYSQL_USER: admin
+      MYSQL_PASSWORD: admin
+    networks:
+      - symfony
+
+  phpmyadmin:
+    image: phpmyadmin
+    container_name: pma
+    restart: always
+    depends_on:
+      - db
+    ports:
+      - 8080:80
+    environment:
+      PMA_HOST: db
+    networks:
+      - symfony
+
+networks:
+  symfony:
