@@ -65,7 +65,7 @@ docker-compose exec php php bin/console doctrine:migrations:migrate
 
 Run the test suite:
 ```bash
-make test
+make test-unit
 ```
 
 ## Contributing
